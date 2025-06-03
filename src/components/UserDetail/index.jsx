@@ -5,7 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
 import "./styles.css";
 
-const API_BASE = "https://gk34xq-8081.csb.app/api";
+const API_BASE = "http://localhost:8081/api";
 
 function UserDetail() {
   const { userId } = useParams();
@@ -17,7 +17,9 @@ function UserDetail() {
     setLoading(true);
     setError(null);
 
-    fetchModel(`${API_BASE}/user/${userId}`)
+    fetchModel(`${API_BASE}/user/${userId}`,{
+      method: "GET"
+    })
       .then((data) => {
         setUser(data);
         setLoading(false);

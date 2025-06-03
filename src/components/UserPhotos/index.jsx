@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Card, CardContent, CardMedia, Link } from "@mui/material";
+import { Stack, Typography, Card, CardContent, CardMedia, TextField, Button } from "@mui/material";
 import { Link as RouterLink, useParams } from "react-router-dom";
 // import models from "../../modelData/models";
 import fetchModel from "../../lib/fetchModelData";
 import "./styles.css";
 
-const API_BASE = "https://gk34xq-8081.csb.app/api";
+const API_BASE = "http://localhost:8081/api";
 
 function UserPhotos() {
   const { userId } = useParams();
@@ -13,18 +13,23 @@ function UserPhotos() {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
     setLoading(true);
     setError(null);
 
     // Fetch user info
-    fetchModel(`${API_BASE}/user/${userId}`)
+    fetchModel(`${API_BASE}/user/${userId}`, {
+      method: "GET"
+    })
       .then((data) => setUser(data))
       .catch((err) => setError(err.message || "Failed to fetch user"));
 
     // Fetch photos for user
-    fetchModel(`${API_BASE}/photo/photosOfUser/${userId}`)
+    fetchModel(`${API_BASE}/photo/photosOfUser/${userId}`, {
+      method: "GET"
+    })
       .then((data) => setPhotos(data))
       .catch((err) => setError(err.message || "Failed to fetch photos"))
       .finally(() => setLoading(false));
@@ -55,17 +60,34 @@ function UserPhotos() {
       minute: "2-digit",
     });
 
+  const handleClick = async () => {
+    console.log("clicked")
+    console.log(comment)
+    const response = await fetchModel(`${API_BASE}/comment/commentsOfPhoto/${photos.comments}`, {
+      method: "POST",
+      headers: {
+        Accept: "Content-Type",
+        "Content-Type": "application/json",
+      },
+      // credentials: "include", // important for session cookies
+      body: JSON.stringify({ comment })
+    })
+    console.log(response)
+  }
   return (
     <div className="photo-container">
       {photos.map((photo) => (
         <Card key={photo._id} className="photo-card">
-          <CardMedia
-            component="img"
-            image={`/images/${photo.file_name}`}
-            alt={`Photo by ${user.first_name}`}
-            className="photo-image"
-            loading="lazy"
-          />
+          <RouterLink component={RouterLink} to={`/details/${photo._id}`} onClick={() => console.log('Clicked!')}>
+            <CardMedia
+              component="img"
+              image={`/images/${photo.file_name}`}
+              alt={`Photo by ${user.first_name}`}
+              className="photo-image"
+              loading="lazy"
+            />
+          </RouterLink>
+
           <CardContent>
             <Typography variant="body2" color="textSecondary">
               Posted on {formatDate(photo.date_time)}
@@ -78,19 +100,20 @@ function UserPhotos() {
                 photo.comments.map((comment) => (
                   <Card key={comment._id} className="comment-card">
                     <Typography variant="body2" color="textSecondary">
-                      {formatDate(comment.date_time)} -{" "}
-                      <Link
+                      {formatDate(comment.date_time)} - {" "}
+                      <RouterLink
                         component={RouterLink}
                         to={`/users/${comment.user._id}`}
                         color="primary"
                         sx={{ ml: 1 }}
                       >
                         {comment.user.first_name} {comment.user.last_name}
-                      </Link>
+                      </RouterLink>
                     </Typography>
                     <Typography variant="body1" sx={{ mt: 1 }}>
                       {comment.comment}
                     </Typography>
+
                   </Card>
                 ))
               ) : (
@@ -98,6 +121,17 @@ function UserPhotos() {
                   No comments yet.
                 </Typography>
               )}
+              
+              <RouterLink to={`/details/${photo._id}`} component={RouterLink}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  className="photos-button"
+                  onClick={() => console.log('Clicked!')}
+                >
+                  Detail Photo
+                </Button>
+              </RouterLink>
             </div>
           </CardContent>
         </Card>

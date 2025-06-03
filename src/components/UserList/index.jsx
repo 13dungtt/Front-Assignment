@@ -12,7 +12,7 @@ import "./styles.css";
 // import models from "../../modelData/models";
 import fetchModel from "../../lib/fetchModelData";
 
-const API_BASE = "https://gk34xq-8081.csb.app/api";
+const API_BASE = "http://localhost:8081/api";
 
 function UserList() {
   const [users, setUsers] = useState([]);
@@ -23,9 +23,11 @@ function UserList() {
     setLoading(true);
     setError(null);
 
-    fetchModel(`${API_BASE}/user/list`)
+    fetchModel(`${API_BASE}/user/list`,{
+      method: "GET"
+    })
       .then((data) => {
-        console.log(data);
+        //console.log(data);
         setUsers(data);
         setLoading(false);
       })
